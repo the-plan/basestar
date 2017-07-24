@@ -3,7 +3,7 @@
 rootname=basestar
 addon=the-plan-b
 
-for i in `seq 1 2`;
+for i in `seq 1 5`;
 do
   echo "creating $rootname$i application..."
   clever create -t maven $rootname$i --org wey-yu --region par --alias $rootname$i --github the-plan/basestar;
