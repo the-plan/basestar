@@ -55,7 +55,7 @@ public class BaseStar extends AbstractVerticle {
     Raider thatRaider = new Raider(
       raiderRecord.getRegistration(),
       raiderRecord.getName(),
-      raiderRecord.getMetadata().getJsonObject("coordinates").getDouble("x"),
+      raiderRecord.getMetadata().getJsonObject("coordinates").getDouble("x"), // TODO NPE Here why ???
       raiderRecord.getMetadata().getJsonObject("coordinates").getDouble("y"),
       new Constraints(
         5.0, 600.0, 600.0, 5.0
@@ -64,7 +64,7 @@ public class BaseStar extends AbstractVerticle {
 
 
     // 👷 this is a worker
-    vertx.setPeriodic(500, id ->{
+    vertx.setPeriodic(1000, timerID ->{
       // This handler will get called every 500 ms
 
       discovery.getRecords(r -> r.getMetadata().getString("kind").equals("raider") , ar -> {
@@ -95,6 +95,12 @@ public class BaseStar extends AbstractVerticle {
                 record.getMetadata().put("raiders_counter", raidersCounter);
                 discovery.update(record, asyncRecUpdateRes -> {
                   System.out.println("🤖 😡 (" + record.getName() + ") I'm updated with " + raiderRecord.getName());
+
+                  //  🙋🙋🙋 ici le circuit breaker pourrait être intéressant (TODO: à expliquer)
+
+                  // there is a problem
+                  // kill the worker
+                  vertx.cancelTimer(timerID);
                 });
                 System.out.println("😡 " + asyncPostRes.cause().getMessage());
               }
@@ -151,6 +157,8 @@ public class BaseStar extends AbstractVerticle {
     Integer servicePort = Integer.parseInt(Optional.ofNullable(System.getenv("SERVICE_PORT")).orElse("80")); // set to 80 on Clever Cloud
     String serviceRoot = Optional.ofNullable(System.getenv("SERVICE_ROOT")).orElse("/api");
 
+    String color = Optional.ofNullable(System.getenv("COLOR")).orElse("FFD433");
+
     // create the microservice record
     record = HttpEndpoint.createRecord(
       serviceName,
@@ -167,6 +175,7 @@ public class BaseStar extends AbstractVerticle {
       .put("message", "Hello 🌍")
       .put("uri", "/coordinates")
       .put("raiders_counter", raidersCounter)
+      .put("color", color)
       .put("app_id", Optional.ofNullable(System.getenv("APP_ID")).orElse("🤖"))
       .put("instance_id", Optional.ofNullable(System.getenv("INSTANCE_ID")).orElse("🤖"))
       .put("instance_type", Optional.ofNullable(System.getenv("INSTANCE_TYPE")).orElse("production")) // build or production
@@ -275,12 +284,12 @@ public class BaseStar extends AbstractVerticle {
 
 
     Integer httpPort = Integer.parseInt(Optional.ofNullable(System.getenv("PORT")).orElse("8080"));
-    System.out.println("😛 " + httpPort);
-    System.out.println("😛 " + System.getenv("PORT"));
 
     HttpServer server = vertx.createHttpServer();
 
     server.requestHandler(router::accept).listen(httpPort, result -> {
+
+
 
       if(result.succeeded()) {
         System.out.println("🌍 Listening on " + httpPort);
@@ -288,6 +297,9 @@ public class BaseStar extends AbstractVerticle {
           publish the microservice to the discovery backend
         */
         discovery.publish(record, asyncResult -> {
+
+
+
 
           if(asyncResult.succeeded()) {
             System.out.println("😃 Microservice is published! " + record.getRegistration());
