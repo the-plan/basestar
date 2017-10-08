@@ -10,3 +10,4 @@
 dump.rdb
 target/
 create.sh
+.clever.json
