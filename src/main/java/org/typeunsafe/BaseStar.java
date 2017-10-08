@@ -298,9 +298,6 @@ public class BaseStar extends AbstractVerticle {
         */
         discovery.publish(record, asyncResult -> {
 
-
-
-
           if(asyncResult.succeeded()) {
             System.out.println("😃 Microservice is published! " + record.getRegistration());
           } else {
