@@ -9,7 +9,7 @@
   <version>1.0-SNAPSHOT</version>
 
   <properties>
-    <vertx.version>3.4.2</vertx.version>
+    <vertx.version>3.9.4</vertx.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <main.verticle>org.typeunsafe.BaseStar</main.verticle>
   </properties>
